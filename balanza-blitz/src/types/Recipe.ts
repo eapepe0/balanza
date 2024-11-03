@@ -11,4 +11,5 @@ export interface RecipeStep {
     name: string;
     steps: RecipeStep[];
     created_at?: string;
+    currentStep?: number;
   }

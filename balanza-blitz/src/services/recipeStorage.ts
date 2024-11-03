@@ -23,6 +23,7 @@ class RecipeStorage {
   async getRecipeById(id: number): Promise<Recipe | null> {
     try {
       const response = await fetch(`${this.API_URL}/recipes/${id}`);
+      console.log(response);
       if (!response.ok) {
         if (response.status === 404) return null;
         const error = await response.text();

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Check, ChevronRight } from 'lucide-react';
 import type { RecipeStep as RecipeStepType } from '../types/Recipe';
 

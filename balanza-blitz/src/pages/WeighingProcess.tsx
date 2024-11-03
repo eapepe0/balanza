@@ -1,27 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { ScaleDisplay } from '../components/ScaleDisplay';
 import { RecipeStep } from '../components/RecipeStep';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import type { Recipe } from '../types/Recipe';
-import { recipeStorage } from '../services/recipeStorage';
+//import { recipeStorage } from '../services/recipeStorage';
 
 const socket = io('http://localhost:3000');
 
 export default function WeighingProcess() {
-  const { recipeId } = useParams();
+  const { id } = useParams();
+  console.log(id);
   const navigate = useNavigate();
   const [weight, setWeight] = useState(0);
   const [recipe, setRecipe] = useState<Recipe | null>(null);
 
   useEffect(() => {
-    if (recipeId) {
-      const foundRecipe = recipeStorage.getRecipeById(Number(recipeId));
-      console.log(foundRecipe);
-      if (foundRecipe) {
-        setRecipe({ ...foundRecipe, currentStep: 0 });
-      }
+    if (id) {
+        fetch(`http://localhost:3000/api/recipes/${id}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data && !data.error) {
+            // Convertir steps a un arreglo si es necesario
+            const parsedSteps = typeof data.steps === 'string' ? JSON.parse(data.steps) : data.steps;
+            setRecipe({ ...data, steps: parsedSteps, currentStep: 0 });
+          } else {
+            console.error('Recipe not found');
+          }
+        })
+        .catch((error) => console.error('Error fetching recipe:', error));
     }
 
     socket.on('weight', (newWeight: number) => {
@@ -34,12 +42,14 @@ export default function WeighingProcess() {
     return () => {
       socket.off('weight');
     };
-  }, [recipeId]);
+  }, [id]);
 
   const checkStepCompletion = (currentWeight: number) => {
     if (!recipe) return;
 
-    const currentStep = recipe.steps[recipe.currentStep];
+    const currentStepIndex = recipe?.currentStep ?? 0;
+    const currentStep = recipe?.steps[currentStepIndex];
+
     if (currentWeight >= currentStep.targetWeight && !currentStep.completed) {
       const updatedSteps = recipe.steps.map((step, index) =>
         index === recipe.currentStep ? { ...step, completed: true } : step
@@ -49,8 +59,11 @@ export default function WeighingProcess() {
   };
 
   const handleNextStep = () => {
-    if (recipe && recipe.currentStep < recipe.steps.length - 1) {
-      setRecipe({ ...recipe, currentStep: recipe.currentStep + 1 });
+    const currentStepIndex = recipe?.currentStep ?? 0;
+    const currentStep = recipe?.steps[currentStepIndex];
+
+    if (recipe && currentStepIndex < recipe.steps.length - 1) {
+      setRecipe({ ...recipe, currentStep: currentStepIndex + 1 });
     }
   };
 
@@ -77,7 +90,8 @@ export default function WeighingProcess() {
     );
   }
 
-  const currentStep = recipe.steps[recipe.currentStep];
+  const currentStepIndex = recipe?.currentStep ?? 0;
+  const currentStep = recipe?.steps[currentStepIndex];
 
   return (
     <div className="max-w-4xl mx-auto">

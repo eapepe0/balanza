@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { Scale, BookOpen } from 'lucide-react';
 import RecipeManagement from './pages/RecipeManagement';
 import { WeighingStation } from './pages/WeighingStation';
+import WeighingProcess from './pages/WeighingProcess';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Routes>
           <Route path="/" element={<RecipeManagement />} />
           <Route path="/weigh" element={<WeighingStation />} />
+          <Route path="/weigh/:id" element={<WeighingProcess />} />
         </Routes>
       </div>
     </BrowserRouter>
